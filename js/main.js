@@ -71,6 +71,7 @@ class UI {
     if (element.name === "delete") {
       const index = tasks.findIndex(t => t.taskId === taskId);
       if (index !== -1) tasks.splice(index, 1);
+      saveTasks();
       row.remove();
     }
 
@@ -83,6 +84,7 @@ class UI {
       element.textContent = task.status ? "Reabrir" : "Completar";
       element.classList.toggle("btn-success");
       element.classList.toggle("btn-warning");
+      saveTasks();
     }
   }
 
@@ -115,6 +117,7 @@ document.getElementById('task-form').addEventListener("submit", (e) => {
 
   tasks.push(task);
 
+  saveTasks();
   renderTasks();
   ui.resetForm();
   ui.showMessages("Tarea Agregada", "success");
@@ -146,6 +149,18 @@ function renderPagination() {
 
   const totalPages = Math.ceil(tasks.length / tasksPerPage);
 
+  if (totalPages === 0) return;
+
+  const firstBtn = document.createElement("button");
+  firstBtn.textContent = "Primera";
+  firstBtn.className = "btn btn-sm btn-secondary mx-1";
+  firstBtn.disabled = currentPage === 1;
+
+  firstBtn.addEventListener("click", () => {
+    currentPage = 1;
+    renderTasks();
+  });
+
   const prevBtn = document.createElement("button");
   prevBtn.textContent = "Anterior";
   prevBtn.className = "btn btn-sm btn-secondary mx-2";
@@ -174,9 +189,21 @@ function renderPagination() {
     }
   });
 
+  const lastBtn = document.createElement("button");
+  lastBtn.textContent = "Última";
+  lastBtn.className = "btn btn-sm btn-secondary mx-1";
+  lastBtn.disabled = currentPage === totalPages;
+
+  lastBtn.addEventListener("click", () => {
+    currentPage = totalPages;
+    renderTasks();
+  });
+
+  pagination.appendChild(firstBtn);
   pagination.appendChild(prevBtn);
   pagination.appendChild(pageInfo);
   pagination.appendChild(nextBtn);
+  pagination.appendChild(lastBtn);
 }
 
 // Consumir API
@@ -199,5 +226,31 @@ async function loadTasksFromAPI() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadTasksFromAPI();
+  const hasLocalTasks = loadTasksFromLocalStorage();
+
+  if (!hasLocalTasks) {
+    loadTasksFromAPI();
+  } else {
+    renderTasks();
+  }
 });
+
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function loadTasksFromLocalStorage() {
+  const storedTasks = localStorage.getItem("tasks");
+
+  if (!storedTasks) return false;
+
+  const parsedTasks = JSON.parse(storedTasks);
+
+  parsedTasks.forEach(task => {
+    tasks.push(
+      new Task(task.taskId, task.userId, task.description, task.status)
+    );
+  });
+
+  return true;
+}
