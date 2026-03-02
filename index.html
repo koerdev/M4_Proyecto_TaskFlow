@@ -11,7 +11,52 @@
 </head>
 
 <body>
+  <nav class="navbar navbar-light bg-dark">
+    <a href="/" class="navbar-brand text-white ms-4">Task Flow</a>
+  </nav>
 
+  <div class="container">
+    <div id="app" class="row mt-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h4>Agregar Tarea</h4>
+          </div>
+          <form id="task-form" class="card-body">
+            <div class="form-group mb-3">
+              <input type="text" id="name" placeholder="Usuario" class="form-control" />
+            </div>
+            <div class="form-group mb-3">
+              <textarea id="description" name="description" placeholder="Descripción" class="form-control"></textarea>
+            </div>
+            <input type="submit" value="Guardar" class="btn btn-primary w-100 rounded-5">
+          </form>
+        </div>
+      </div>
+      <div class="col-md-8 mt-4 mt-md-0">
+        <div id="task-list" class="card">
+          <div class="card-header">
+            <h4>Lista de Tareas</h4>
+          </div>
+          <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+              <thead class="table-light text-center">
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="task-table-body">
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="./js/main.js"></script>
 </body>
