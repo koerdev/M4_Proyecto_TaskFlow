@@ -99,6 +99,10 @@ class UI {
   };
 };
 
+const ui = new UI();
+let currentPage = 1;
+const tasksPerPage = 10;
+
 // Eventos del DOM
 document.getElementById('task-form').addEventListener("submit", (e) => {
   e.preventDefault();
@@ -111,13 +115,89 @@ document.getElementById('task-form').addEventListener("submit", (e) => {
 
   tasks.push(task);
 
-  const ui = new UI();
-  ui.addtask(task);
+  renderTasks();
   ui.resetForm();
   ui.showMessages("Tarea Agregada", "success");
 });
 
 document.getElementById("task-table-body").addEventListener("click", (e) => {
-  const ui = new UI();
   ui.handleActions(e.target);
+});
+
+function renderTasks() {
+  const taskList = document.getElementById("task-table-body");
+  taskList.innerHTML = "";
+
+  const start = (currentPage - 1) * tasksPerPage;
+  const end = start + tasksPerPage;
+
+  const paginatedTasks = tasks.slice(start, end);
+
+  paginatedTasks.forEach(task => {
+    ui.addtask(task);
+  });
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const pagination = document.getElementById("pagination");
+  pagination.innerHTML = "";
+
+  const totalPages = Math.ceil(tasks.length / tasksPerPage);
+
+  const prevBtn = document.createElement("button");
+  prevBtn.textContent = "Anterior";
+  prevBtn.className = "btn btn-sm btn-secondary mx-2";
+  prevBtn.disabled = currentPage === 1;
+
+  prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTasks();
+    }
+  });
+
+  const pageInfo = document.createElement("span");
+  pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+  pageInfo.className = "mx-2";
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Siguiente";
+  nextBtn.className = "btn btn-sm btn-secondary mx-2";
+  nextBtn.disabled = currentPage === totalPages;
+
+  nextBtn.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTasks();
+    }
+  });
+
+  pagination.appendChild(prevBtn);
+  pagination.appendChild(pageInfo);
+  pagination.appendChild(nextBtn);
+}
+
+// Consumir API
+async function loadTasksFromAPI() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/todos");
+    const data = await response.json();
+
+    data.forEach(item => {
+      tasks.push(
+        new Task(item.id, item.userId, item.title, item.completed)
+      );
+    });
+
+    renderTasks();
+
+  } catch (error) {
+    console.error("Error cargando tareas:", error);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadTasksFromAPI();
 });
