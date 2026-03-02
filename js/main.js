@@ -43,12 +43,15 @@ class UI {
     element.dataset.id = task.taskId;
     const userName = users.get(task.userId) || "Desconocido";
     const statusText = task.status ? "Completa" : "Incompleta";
+    const buttonText = task.status ? "Reabrir" : "Completar";
+    const buttonClass = task.status ? "btn-warning" : "btn-success";
     element.innerHTML = `
             <td>${userName}</td>
             <td>${task.description}</td>
-            <td>${statusText}</td>
+            <td class="status">${statusText}</td>
             <td>
-                <button class="btn btn-danger btn-sm" name="delete">X</button>
+              <button class="btn ${buttonClass} btn-sm" name="toggle">${buttonText}</button>
+              <button class="btn btn-danger btn-sm" name="delete">X</button>
             </td>
         `;
     taskList.appendChild(element);
@@ -58,19 +61,30 @@ class UI {
     document.getElementById('task-form').reset();
   };
 
-  deletetask(element) {
+  handleActions(element) {
+    const row = element.parentElement.parentElement;
+    const taskId = parseInt(row.dataset.id);
+
+    const task = tasks.find(t => t.taskId === taskId);
+    if (!task) return;
+
     if (element.name === "delete") {
-      const row = element.parentElement.parentElement;
-      const taskId = parseInt(row.dataset.id);
-
       const index = tasks.findIndex(t => t.taskId === taskId);
-      if (index !== -1) {
-        tasks.splice(index, 1);
-      }
-
+      if (index !== -1) tasks.splice(index, 1);
       row.remove();
-    };
-  };
+    }
+
+    if (element.name === "toggle") {
+      task.status = !task.status;
+
+      const statusCell = row.querySelector(".status");
+      statusCell.textContent = task.status ? "Completa" : "Incompleta";
+
+      element.textContent = task.status ? "Reabrir" : "Completar";
+      element.classList.toggle("btn-success");
+      element.classList.toggle("btn-warning");
+    }
+  }
 
   showMessages(message, classCSS) {
     const div = document.createElement("div");
@@ -105,5 +119,5 @@ document.getElementById('task-form').addEventListener("submit", (e) => {
 
 document.getElementById("task-table-body").addEventListener("click", (e) => {
   const ui = new UI();
-  ui.deletetask(e.target);
+  ui.handleActions(e.target);
 });
